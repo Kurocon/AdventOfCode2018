@@ -1,14 +1,17 @@
+from typing import List
+
+
 class AOCDays:
     _instance = None
     days = None
 
     def __init__(self):
-        self.days = {i+1: None for i in range(25)}
+        self.days = {i+1: [] for i in range(25)}
 
     def add_day(self, number: int, cls: 'days.AOCDay') -> None:
-        self.days[number] = cls
+        self.days[number].append(cls)
 
-    def get_day(self, number: int) -> 'days.AOCDay':
+    def get_day(self, number: int) -> 'List[days.AOCDay]':
         return self.days[number]
 
     @classmethod

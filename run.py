@@ -6,9 +6,14 @@ import traceback
 import os
 
 if __name__ == "__main__":
+    run_everything = False
     if len(sys.argv) >= 2:
         try:
-            day_number = int(sys.argv[1])
+            if sys.argv[1] == "all":
+                run_everything = True
+                day_number = 1
+            else:
+                day_number = int(sys.argv[1])
         except Exception:
             print("{} - Runs a given AoC day (or the current day if no arguments are given)".format(sys.argv[0]))
             print("Usage: {} [day]".format(sys.argv[0]))
@@ -31,34 +36,43 @@ if __name__ == "__main__":
     session_token = settings['session_token']
     year = settings['year']
 
+    days_to_run = [day_number]
+    if run_everything:
+        days_to_run = [x+1 for x in range(25)]
+
     # Dynamically try to load the requested day
     from days import *
     from aocdays import AOCDays
     days: AOCDays = AOCDays.get_instance()
-    day = days.get_day(day_number)
 
-    if day is not None:
-        print("Attempting to run AoC day {}...".format(day_number))
-        try:
-            d = day(year, day_number, session_token)
-            d.run()
-        except ConnectionError as e:
-            print(e, file=sys.stderr)
-        except Exception as e:
-            traceback.print_exc()
-    else:
-        if day_number == datetime.date.today().day:
-            # This is today, create it!
-            template_filename = os.path.join(os.path.dirname(__file__), "days/_template.py")
-            newday_filename = os.path.join(os.path.dirname(__file__), "days/day{}.py".format(day_number))
-            shutil.copy(template_filename, newday_filename)
-            with open(newday_filename, 'r') as f:
-                lines = f.readlines()
-            lines = [x.replace("@day(0)", "@day({})".format(day_number)) for x in lines]
-            with open(newday_filename, 'w') as f:
-                f.writelines(lines)
+    for d in days_to_run:
+        day = days.get_day(d)
 
-            print("Files for day {} created! Happy coding and good luck!".format(day_number))
+        if day:
+            for someones_day in day:
+                print("Attempting to run AoC day {} from {}...".format(d, someones_day.creator))
+                # noinspection PyBroadException
+                try:
+                    instance = someones_day(year, d, session_token)
+                    instance.run()
+                except ConnectionError as e:
+                    print(e, file=sys.stderr)
+                except Exception as e:
+                    traceback.print_exc()
         else:
-            print("I have nothing to run for day {}".format(day_number))
+            if d == datetime.date.today().day:
+                # This is today, create it!
+                template_filename = os.path.join(os.path.dirname(__file__), "days/_template.py")
+                newday_filename = os.path.join(os.path.dirname(__file__), "days/day{}.py".format(d))
+                shutil.copy(template_filename, newday_filename)
+                with open(newday_filename, 'r') as f:
+                    lines = f.readlines()
+                lines = [x.replace("@day(0)", "@day({})".format(d)) for x in lines]
+                with open(newday_filename, 'w') as f:
+                    f.writelines(lines)
+
+                print("Files for day {} created! Happy coding and good luck!".format(d))
+            else:
+                print("Attempting to run AoC day {}...".format(d))
+                print("I have nothing to run for day {}".format(d))
 

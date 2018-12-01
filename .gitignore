@@ -105,4 +105,8 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Exclude my own settings
 settings.json
+
+# Exclude solutions from others
+days/day[0-9]*_*.py

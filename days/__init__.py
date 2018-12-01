@@ -1,5 +1,6 @@
 import os
 import glob
+import time
 from typing import Generator
 
 import requests
@@ -19,6 +20,7 @@ def day(day_number):
 
 
 class AOCDay:
+    creator = "Kevin"
     year = 2018
     day_number = 0
     session_token = ""
@@ -52,7 +54,7 @@ class AOCDay:
     def load_input(self):
         if self.input_filename:
             with open(self.input_filename, 'r') as f:
-                self.input_data = [int(x.strip()) for x in f.readlines()]
+                self.input_data = [x.strip() for x in f.readlines()]
 
     def run(self):
         self.download_input()
@@ -65,8 +67,11 @@ class AOCDay:
             def dprint(thing):
                 print(thing, file=output_file)
                 print(thing)
-                
-            common = self.common()
+
+            input_data = self.input_data
+
+            start_time = time.time()
+            common = self.common(input_data)
             if common:
                 dprint("== Common ==")
                 for x in common:
@@ -75,15 +80,17 @@ class AOCDay:
     
             dprint("== Part 1 ==")
             printed = False
-            for x in self.part1():
+            for x in self.part1(input_data):
                 if not printed:
                     printed = True
                 dprint(x)
             if not printed:
                 dprint("(no output)")
+            dprint("== Ran in {:.3f} ms ==".format((time.time() - start_time)*1000))
             dprint("")
-    
-            common = self.common()
+
+            start_time = time.time()
+            common = self.common(input_data)
             if common:
                 dprint("== Common ==")
                 for x in common:
@@ -92,19 +99,20 @@ class AOCDay:
     
             dprint("== Part 2 ==")
             printed = False
-            for x in self.part2():
+            for x in self.part2(input_data):
                 if not printed:
                     printed = True
                 dprint(x)
             if not printed:
                 dprint("(no output)")
+            dprint("== Ran in {:.3f} ms ==".format((time.time() - start_time)*1000))
             dprint("")
 
-    def common(self) -> Generator:
+    def common(self, input_data) -> Generator:
         pass
 
-    def part1(self) -> Generator:
+    def part1(self, input_data) -> Generator:
         pass
 
-    def part2(self) -> Generator:
+    def part2(self, input_data) -> Generator:
         pass
