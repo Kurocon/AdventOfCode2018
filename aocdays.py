@@ -6,7 +6,7 @@ class AOCDays:
     days = None
 
     def __init__(self):
-        self.days = {i+1: [] for i in range(25)}
+        self.days = {i: [] for i in range(26)}
 
     def add_day(self, number: int, cls: 'days.AOCDay') -> None:
         self.days[number].append(cls)
