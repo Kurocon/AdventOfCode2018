@@ -4,7 +4,7 @@ from days import AOCDay, day
 @day(1)
 class DayOne(AOCDay):
     def part1(self, input_data):
-        yield sum(i for i in map(int, input_data))
+        yield sum(map(int, input_data))
 
     def part2(self, input_data):
         frequency = 0

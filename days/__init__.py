@@ -32,8 +32,14 @@ class AOCDay:
         self.year = year
         self.day_number = day_number
         self.session_token = session_token
-        self.input_filename = os.path.join(os.path.dirname(__file__), "../inputs/day{}_{}".format(self.day_number, "input"))
-        self.output_filename = os.path.join(os.path.dirname(__file__), "../outputs/day{}_{}".format(self.day_number, "output"))
+        self.input_filename = os.path.join(os.path.dirname(__file__),
+                                           "../inputs/day{}_{}".format(self.day_number, "input"))
+        if self.creator == "Kevin":
+            self.output_filename = os.path.join(os.path.dirname(__file__),
+                                                "../outputs/day{}_{}".format(self.day_number, "output"))
+        else:
+            self.output_filename = os.path.join(os.path.dirname(__file__),
+                                                "../outputs/day{}_{}_{}".format(self.day_number, "output", self.creator))
 
     def download_input(self):
         if os.path.isfile(self.input_filename):

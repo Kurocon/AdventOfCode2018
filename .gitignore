@@ -110,3 +110,4 @@ settings.json
 
 # Exclude solutions from others
 days/day[0-9]*_*.py
+outputs/day[0-9]*_output_*
