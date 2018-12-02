@@ -85,11 +85,13 @@ class AOCDay:
                 dprint("")
     
             dprint("== Part 1 ==")
+            part1 = self.part1(input_data)
             printed = False
-            for x in self.part1(input_data):
-                if not printed:
-                    printed = True
-                dprint(x)
+            if part1:
+                for x in part1:
+                    if not printed:
+                        printed = True
+                    dprint(x)
             if not printed:
                 dprint("(no output)")
             dprint("== Ran in {:.3f} ms ==".format((time.time() - start_time)*1000))
@@ -104,11 +106,13 @@ class AOCDay:
                 dprint("")
     
             dprint("== Part 2 ==")
+            part2 = self.part2(input_data)
             printed = False
-            for x in self.part2(input_data):
-                if not printed:
-                    printed = True
-                dprint(x)
+            if part2:
+                for x in part2:
+                    if not printed:
+                        printed = True
+                    dprint(x)
             if not printed:
                 dprint("(no output)")
             dprint("== Ran in {:.3f} ms ==".format((time.time() - start_time)*1000))

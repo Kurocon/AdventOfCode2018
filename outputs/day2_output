@@ -1,0 +1,10 @@
+== Part 1 ==
+247 items with 2 common letters, and 28 items with 3 common letters
+Checksum: 6916
+== Ran in 1.762 ms ==
+
+== Part 2 ==
+Found words with only one differing character! oeylbtcxjqnzhgyyylfapviusr and oeylbtcxjqnzhgkyylfapviusr.
+Without the differing letter, this is oeylbtcxjqnzhgyylfapviusr
+== Ran in 106.432 ms ==
+
