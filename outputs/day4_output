@@ -1,0 +1,10 @@
+== Part 1 ==
+Guard 2851 sleeps the most 524 minutes
+He sleeps the most on minute 44 (15 times)
+So the answer is 2851 * 44 = 125444
+== Ran in 5.443 ms ==
+
+== Part 2 ==
+Guard 733 spent most time asleep in minute 25 (16 times), so the answer is 18325
+== Ran in 9.182 ms ==
+
