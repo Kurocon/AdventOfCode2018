@@ -5,7 +5,7 @@ from days import AOCDay, day
 
 
 @day(3)
-class DayTemplate(AOCDay):
+class DayThree(AOCDay):
 
     PARSE_REGEX = r'#([0-9]+) @ ([0-9]+),([0-9]+): ([0-9]+)x([0-9]+)'
     parsed_input = []

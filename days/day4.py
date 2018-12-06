@@ -5,7 +5,7 @@ from days import AOCDay, day
 
 
 @day(4)
-class DayTemplate(AOCDay):
+class DayFour(AOCDay):
     sleep_data = defaultdict(int)
     minute_data = {x: [] for x in range(60)}
     regex_begin = r'\[([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2})\] Guard #([0-9]+) begins shift'
