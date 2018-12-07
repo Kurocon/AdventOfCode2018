@@ -1,0 +1,15 @@
+== Common ==
+Grid is of size 360 x 355
+
+== Part 1 ==
+Letter candidates: ['D', 'E', 'F', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'S', 'W', 'Z', 'b', 'd', 'e', 'f', 'g', 'i', 'j', 'k', 'l', 'm', 'q', 'w', 'x']
+The largest field is J with 3260 tiles
+== Ran in 4124.162 ms ==
+
+== Common ==
+Grid is of size 360 x 355
+
+== Part 2 ==
+The safe field is 42535 tiles large
+== Ran in 2147.347 ms ==
+
