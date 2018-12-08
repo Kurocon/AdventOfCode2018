@@ -61,6 +61,8 @@ class AOCDay:
         if self.input_filename:
             with open(self.input_filename, 'r') as f:
                 self.input_data = [x.strip() for x in f.readlines()]
+                if len(self.input_data) == 1:
+                    self.input_data = self.input_data[0]
 
     def run(self):
         self.download_input()

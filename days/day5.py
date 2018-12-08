@@ -32,21 +32,21 @@ class DayFive(AOCDay):
         pass
 
     def part1(self, input_data):
-        # input_data = [self.test_input]
+        # input_data = self.test_input
         old = None
-        new = input_data[0]
+        new = input_data
         while old != new:
             old, new = DayFive.check_one_step(new)
 
-        yield "Input has {} characters, output has {} characters. {} characters reacted.".format(len(input_data[0]),
+        yield "Input has {} characters, output has {} characters. {} characters reacted.".format(len(input_data),
                                                                                                  len(new),
-                                                                                                 len(input_data[0]) - len(new))
+                                                                                                 len(input_data) - len(new))
 
     def part2(self, input_data):
         results = {}
         for c in "abcdefghijklmnopqrstuvwxyz":
             yield "Processing {}...".format(c)
-            current_input = list(DayFive.remove_all(input_data[0], c))
+            current_input = list(DayFive.remove_all(input_data, c))
 
             old = None
             new = current_input
