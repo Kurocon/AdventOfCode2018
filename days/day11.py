@@ -51,5 +51,6 @@ class DayTemplate(AOCDay):
                             power_level_sum += self.get_power_level(x+i, y+j)
                     if power_level_sum > max_power_level[0]:
                         max_power_level = (power_level_sum, x, y, size)
+                        yield "New max power: {}".format(max_power_level)
 
         yield max_power_level[0], max_power_level[1], max_power_level[2], max_power_level[3]
