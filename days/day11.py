@@ -2,7 +2,7 @@ from days import AOCDay, day
 
 
 @day(11)
-class DayTemplate(AOCDay):
+class DayEleven(AOCDay):
     test_input = "42"
     serial_number: int = None
 
