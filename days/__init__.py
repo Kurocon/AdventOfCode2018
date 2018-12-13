@@ -60,7 +60,7 @@ class AOCDay:
     def load_input(self):
         if self.input_filename:
             with open(self.input_filename, 'r') as f:
-                self.input_data = [x.strip() for x in f.readlines()]
+                self.input_data = [x.replace("\n", "") for x in f.readlines()]
                 if len(self.input_data) == 1:
                     self.input_data = self.input_data[0]
 
