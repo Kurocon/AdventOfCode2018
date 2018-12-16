@@ -1,0 +1,25 @@
+== Part 1 ==
+663 samples behave like three or more opcodes.
+== Ran in 16.159 ms ==
+
+== Part 2 ==
+Identified 3 as eqir
+Identified 7 as gtri
+Identified 8 as eqrr
+Identified 6 as eqri
+Identified 11 as gtrr
+Identified 10 as gtir
+Identified 5 as setr
+Identified 13 as bani
+Identified 2 as banr
+Identified 14 as seti
+Identified 4 as muli
+Identified 1 as addr
+Identified 15 as bori
+Identified 12 as borr
+Identified 0 as mulr
+Identified 9 as addi
+All instructions identified; running program...
+Register 0 has value 525
+== Ran in 17.305 ms ==
+
