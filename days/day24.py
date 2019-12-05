@@ -21,7 +21,7 @@ class Group:
 
     def __init__(self, identifier, side, unit_count, health, attack_damage, attack_type, initiative, weaknesses=None, immunities=None):
         self.side = side
-        self.units = [health for x in range(unit_count)]
+        self.units = unit_count
         self.health = health
         self.attack_damage = attack_damage
         self.attack_type = attack_type
@@ -37,7 +37,7 @@ class Group:
 
     def __str__(self):
         return "{} units each with {} hit points (immune to {}; weak to {}) with an attack that does {} {} damage at initiative {}".format(
-            len(self.units), self.health,
+            self.units, self.health,
             ", ".join(self.immunities) if self.immunities else "nothing",
             ", ".join(self.weaknesses) if self.weaknesses else "nothing",
             self.attack_damage, self.attack_type, self.initiative
@@ -45,40 +45,31 @@ class Group:
 
     @property
     def effective_power(self):
-        return len(self.units) * self.attack_damage
+        return self.units * self.attack_damage
 
     def attack_power(self, target: 'Group'):
         damage = self.effective_power
         if self.attack_type in target.immunities:
             damage = 0
         if self.attack_type in target.weaknesses:
-            damage *= 2
+            damage = damage * 2
         return damage
 
     def select_target(self, other_groups: 'Iterator[Group]'):
-        max_damage = 0
-        max_groups = []
-
-        for target in other_groups:
-            damage = self.attack_power(target)
-            if damage > max_damage:
-                max_damage = damage
-                max_groups = [target]
-            if damage == max_damage:
-                max_groups.append(target)
-
-        possible_targets = sorted(max_groups, key=lambda x: (x.effective_power, x.initiative), reverse=True)
-        self.current_target = possible_targets[0] if possible_targets else None
-        return possible_targets[0] if possible_targets else None
+        self.current_target = max(other_groups,
+                                  key=lambda x: (self.attack_power(x), x.effective_power, x.initiative),
+                                  default=None
+                                  )
+        if self.current_target and self.attack_power(self.current_target) == 0:
+            self.current_target = None
+        return self.current_target
 
     @staticmethod
     def inflict_damage(attacker: 'Group', defender: 'Group'):
         damage = attacker.attack_power(defender)
         units_lost = damage // defender.health
-
-        units_left = len(defender.units)
-        defender.units = defender.units[units_lost:]
-        return min(units_lost, units_left)
+        defender.units = max(0, defender.units - units_lost)
+        return units_lost
 
     def attack(self):
         if self.current_target:
@@ -181,91 +172,95 @@ Infection:
             self.infection_groups.append(Group(group_id, Group.SIDE_INFECTION, num_units, hp, damage, damage_type, initiative, weaknesses, immunities))
             group_id += 1
 
-    def part1(self, input_data):
-        # While both sides still have groups
-        while len(self.immune_system_groups) > 0 and len(self.infection_groups) > 0:
-            # Info
-            if DEBUG:
-                print("Immune System:")
-                for group in self.immune_system_groups:
-                    print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                print("Infection:")
-                for group in self.infection_groups:
-                    print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                print("")
+    def play_round(self):
+        # Info
+        if DEBUG:
+            print("Immune System:")
+            for group in self.immune_system_groups:
+                print("Group {} contains {} units".format(group.identifier, group.units))
+            print("Infection:")
+            for group in self.infection_groups:
+                print("Group {} contains {} units".format(group.identifier, group.units))
+            print("")
 
-            # Target selection phase
-            for side in [self.infection_groups, self.immune_system_groups]:
-                order = sorted(side, key=lambda x: (x.effective_power, x.initiative), reverse=True)
-                chosen_targets = []
-                for group in order:
-                    if group.side == Group.SIDE_INFECTION:
-                        chosen_target = group.select_target(filter(lambda x: x not in chosen_targets,self.immune_system_groups))
-                    else:
-                        chosen_target = group.select_target(filter(lambda x: x not in chosen_targets, self.infection_groups))
-                    if chosen_target:
-                        chosen_targets.append(chosen_target)
-                    if DEBUG and group.current_target:
-                        print("{} group {} would deal defending group {} {} damage".format(
-                            Group.SIDES[group.side], group.identifier, group.current_target.identifier, group.attack_power(group.current_target)
-                        ))
-
-            if DEBUG:
-                print("")
-
-            # Attack phase
-            order = sorted(self.immune_system_groups + self.infection_groups, key=lambda x: x.initiative, reverse=True)
+        # Target selection phase
+        for side in [self.infection_groups, self.immune_system_groups]:
+            order = sorted(side, key=lambda x: (x.effective_power, x.initiative), reverse=True)
+            chosen_targets = []
             for group in order:
-                res = group.attack()
+                if group.side == Group.SIDE_INFECTION:
+                    chosen_target = group.select_target(
+                        filter(lambda x: x not in chosen_targets, self.immune_system_groups))
+                else:
+                    chosen_target = group.select_target(
+                        filter(lambda x: x not in chosen_targets, self.infection_groups))
+                if chosen_target:
+                    chosen_targets.append(chosen_target)
                 if DEBUG and group.current_target:
-                    print("{} group {} attacks defending group {}, killing {} units".format(
-                        Group.SIDES[group.side], group.identifier, group.current_target.identifier, res
+                    print("{} group {} would deal defending group {} {} damage".format(
+                        Group.SIDES[group.side], group.identifier, group.current_target.identifier,
+                        group.attack_power(group.current_target)
                     ))
 
-            # Cleanup phase
-            for group in self.immune_system_groups + self.infection_groups:
-                group.cleanup()
-            self.immune_system_groups = list(filter(lambda x: not x.dead, self.immune_system_groups))
-            self.infection_groups = list(filter(lambda x: not x.dead, self.infection_groups))
+        if DEBUG:
+            print("")
+
+        # Attack phase
+        damage_done = False
+        order = sorted(self.immune_system_groups + self.infection_groups, key=lambda x: x.initiative, reverse=True)
+        for group in order:
+            res = group.attack()
+            if res:
+                damage_done = True
+            if DEBUG and group.current_target:
+                print("{} group {} attacks defending group {}, killing {} units".format(
+                    Group.SIDES[group.side], group.identifier, group.current_target.identifier, res
+                ))
+
+        if not damage_done:
+            raise ValueError("Stalemate!")
+
+        # Cleanup phase
+        for group in self.immune_system_groups + self.infection_groups:
+            group.cleanup()
+        self.immune_system_groups = list(filter(lambda x: not x.dead, self.immune_system_groups))
+        self.infection_groups = list(filter(lambda x: not x.dead, self.infection_groups))
+
+
+    def play_game(self):
+        # While both sides still have groups
+        while len(self.immune_system_groups) > 0 and len(self.infection_groups) > 0:
+            self.play_round()
 
         # Info
         if DEBUG:
             print("Immune System:")
             if len(self.immune_system_groups):
                 for group in self.immune_system_groups:
-                    print("Group {} contains {} units".format(group.identifier, len(group.units)))
+                    print("Group {} contains {} units".format(group.identifier, group.units))
             else:
                 print("No groups remain.")
             print("Infection:")
             if len(self.infection_groups):
                 for group in self.infection_groups:
-                    print("Group {} contains {} units".format(group.identifier, len(group.units)))
+                    print("Group {} contains {} units".format(group.identifier, group.units))
             else:
                 print("No groups remain.")
 
         winning_army = self.immune_system_groups if len(self.immune_system_groups) else self.infection_groups
-        units_left = sum(len(x.units) for x in winning_army)
-        yield units_left
+        units_left = sum(x.units for x in winning_army)
+        return units_left, Group.SIDE_IMMUNE_SYSTEM if len(self.immune_system_groups) else Group.SIDE_INFECTION
+
+    def part1(self, input_data):
+        yield self.play_game()[0]
 
     def boost(self, immune_groups, amount):
         for group in immune_groups:
             group.boost(amount)
 
-    def get_new_boost(self, boost_amount, phase):
-        if phase == 0:
-            return boost_amount + 1000
-        if phase == 1:
-            return boost_amount + 100
-        if phase == 2:
-            return boost_amount + 10
-        if phase == 3:
-            return boost_amount + 1
-        raise ValueError("Invalid phase {}".format(phase))
-
     def part2(self, input_data):
         boost_amount = 0
-        phase = 0
-        min_boost_that_still_fails = 0
+
         while True:
             # Reset
             self.reset()
@@ -274,103 +269,18 @@ Infection:
             # Apply boost
             self.boost(self.immune_system_groups, boost_amount)
 
-            stalemate = False
-
-            # While both sides still have groups
-            turn = 0
-            while len(self.immune_system_groups) > 0 and len(self.infection_groups) > 0:
-                turn += 1
-                # Info
-                if DEBUG:
-                    print("Immune System:")
-                    for group in self.immune_system_groups:
-                        print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                    print("Infection:")
-                    for group in self.infection_groups:
-                        print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                    print("")
-
-                # Target selection phase
-                for side in [self.infection_groups, self.immune_system_groups]:
-                    order = sorted(side, key=lambda x: (x.effective_power, x.initiative), reverse=True)
-                    chosen_targets = []
-                    for group in order:
-                        if group.side == Group.SIDE_INFECTION:
-                            chosen_target = group.select_target(
-                                filter(lambda x: x not in chosen_targets, self.immune_system_groups))
-                        else:
-                            chosen_target = group.select_target(
-                                filter(lambda x: x not in chosen_targets, self.infection_groups))
-                        if chosen_target:
-                            chosen_targets.append(chosen_target)
-                        if DEBUG and group.current_target:
-                            print("{} group {} would deal defending group {} {} damage".format(
-                                Group.SIDES[group.side], group.identifier, group.current_target.identifier,
-                                group.attack_power(group.current_target)
-                            ))
-
-                if DEBUG:
-                    print("")
-
-                # Attack phase
-                order = sorted(self.immune_system_groups + self.infection_groups, key=lambda x: x.initiative, reverse=True)
-                damage_done = False
-                for group in order:
-                    res = group.attack()
-                    if res > 0:
-                        damage_done = True
-                    if DEBUG and group.current_target:
-                        print("{} group {} attacks defending group {}, killing {} units".format(
-                            Group.SIDES[group.side], group.identifier, group.current_target.identifier, res
-                        ))
-
-                if not damage_done:
-                    print("Stalemate detected! Resetting and going to higher boost")
-                    stalemate = True
-                    break
-
-                # Cleanup phase
-                for group in self.immune_system_groups + self.infection_groups:
-                    group.cleanup()
-                self.immune_system_groups = list(filter(lambda x: not x.dead, self.immune_system_groups))
-                self.infection_groups = list(filter(lambda x: not x.dead, self.infection_groups))
-
-            # Info
             if DEBUG:
-                print("Immune System:")
-                if len(self.immune_system_groups):
-                    for group in self.immune_system_groups:
-                        print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                else:
-                    print("No groups remain.")
-                print("Infection:")
-                if len(self.infection_groups):
-                    for group in self.infection_groups:
-                        print("Group {} contains {} units".format(group.identifier, len(group.units)))
-                else:
-                    print("No groups remain.")
+                print("Boost {}...".format(boost_amount), end="")
 
-            winning_army = self.immune_system_groups if len(self.immune_system_groups) else self.infection_groups
-            units_left = sum(len(x.units) for x in winning_army)
-
-            if stalemate:
-                print("Stalemate detected! Resetting and going to higher boost")
-                print("Skipping boost {}".format(boost_amount))
-                boost_amount += 1
-            elif len(self.immune_system_groups):
-                if(min_boost_that_still_fails + 1 == boost_amount):
+            try:
+                units_left, army = self.play_game()
+                if DEBUG:
+                    print(" {} wins".format(army))
+                if army == Group.SIDE_IMMUNE_SYSTEM:
+                    yield units_left
                     break
-                phase += 1
-                print("We won!")
-                print("Current boost: {}".format(boost_amount))
-                print("Units left: {}".format(sum(len(x.units) for x in self.immune_system_groups)))
-                boost_amount = min_boost_that_still_fails
-                print("Entering new phase {}".format(phase))
-            else:
-                min_boost_that_still_fails = boost_amount
-                boost_amount = boost_amount + 1 # self.get_new_boost(boost_amount, phase)
-                print("Failed! New boost is {}".format(boost_amount))
-
-        print("Minimum boost necessary is {} # {}".format(min_boost_that_still_fails + 1, boost_amount))
-        yield units_left
-
+                boost_amount += 1
+            except ValueError:
+                if DEBUG:
+                    print(" Stalemate")
+                boost_amount += 1
